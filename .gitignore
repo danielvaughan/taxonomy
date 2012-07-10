@@ -1,0 +1,6 @@
+
+target/test-classes/com/danielvaughan/taxonomy/server/TaxonomySetupTest.class
+
+target/neo4j-db/neostore.propertystore.db.index.id
+
+target/neo4j-db/tm_tx_log.1
