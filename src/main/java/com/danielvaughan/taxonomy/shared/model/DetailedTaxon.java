@@ -11,6 +11,10 @@ public class DetailedTaxon extends Taxon {
   private String geneticCode;
   private String mitochondrialGeneticCode;
 
+  public enum DetailedTaxonField {
+    PARENT_TAX_ID, HIDDEN, GENETIC_CODE, MITOCHONDRIAL_GENETIC_CODE, RANK, PLN
+  }
+  
   public DetailedTaxon(final String taxId, final String scientificName, final String commonName) {
     super(taxId, scientificName, commonName);
   }

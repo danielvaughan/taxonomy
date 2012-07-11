@@ -5,9 +5,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 public class Taxon {
 
   public enum TaxonField {
-    TAX_ID, SCIENTIFIC_NAME, COMMON_NAME, PARENT_TAX_ID, HIDDEN, GENETIC_CODE, MITOCHONDRIAL_GENETIC_CODE, RANK, PLN
+    TAX_ID, SCIENTIFIC_NAME, COMMON_NAME
   }
-
+  
   private String scientificName;
 
   private String taxId;

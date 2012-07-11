@@ -3,6 +3,7 @@ package com.danielvaughan.taxonomy.server;
 import com.danielvaughan.taxonomy.server.daos.TaxonDao;
 import com.danielvaughan.taxonomy.server.util.ApplicationContextLoader;
 import com.danielvaughan.taxonomy.shared.model.DetailedTaxon;
+import com.danielvaughan.taxonomy.shared.model.Synonym;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -122,6 +123,7 @@ public class TaxonomySetup {
       int eventType = xmlr.getEventType();
       String curElement = "";
       final List<DetailedTaxon> taxonBatch = new ArrayList<DetailedTaxon>();
+      String currentTaxId = "";
       while (xmlr.hasNext()) {
         eventType = xmlr.next();
         switch (eventType) {
@@ -130,6 +132,7 @@ public class TaxonomySetup {
             curElement = xmlr.getName().toString();
             if (curElement.equals("taxon") && depth == 1) {
               final String taxId = xmlr.getAttributeValue("", "taxId");
+              currentTaxId = taxId;
               final String scientificName = xmlr.getAttributeValue("", "scientificName");
               final String hidden = xmlr.getAttributeValue("", "hidden");
               final String rank = xmlr.getAttributeValue("", "rank");
@@ -150,6 +153,13 @@ public class TaxonomySetup {
                 taxonDao.batchAddTaxons(taxonBatch);
                 taxonBatch.clear();
               }
+            }
+            if (curElement.equals("synonym"))
+            {
+              final String type = xmlr.getAttributeValue("", "type");
+              final String name = xmlr.getAttributeValue("", "name");
+              final Synonym synonym = new Synonym(currentTaxId, type, name);
+              taxonDao.addSynonym(synonym);
             }
             break;
           case XMLEvent.END_ELEMENT:

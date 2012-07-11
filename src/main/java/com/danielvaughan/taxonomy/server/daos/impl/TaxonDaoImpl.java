@@ -2,10 +2,15 @@ package com.danielvaughan.taxonomy.server.daos.impl;
 
 import com.danielvaughan.taxonomy.server.InterRelType;
 import com.danielvaughan.taxonomy.server.ServerConstants.IndexId;
+import com.danielvaughan.taxonomy.server.GlobalField;
+import com.danielvaughan.taxonomy.server.NodeType;
 import com.danielvaughan.taxonomy.server.ServerErrorMessages;
 import com.danielvaughan.taxonomy.server.ServerInfoMessages;
 import com.danielvaughan.taxonomy.server.daos.TaxonDao;
 import com.danielvaughan.taxonomy.shared.model.DetailedTaxon;
+import com.danielvaughan.taxonomy.shared.model.DetailedTaxon.DetailedTaxonField;
+import com.danielvaughan.taxonomy.shared.model.Synonym;
+import com.danielvaughan.taxonomy.shared.model.Synonym.SynonymField;
 import com.danielvaughan.taxonomy.shared.model.Taxon;
 import com.danielvaughan.taxonomy.shared.model.Taxon.TaxonField;
 
@@ -46,6 +51,11 @@ public class TaxonDaoImpl implements TaxonDao {
   private Index<Node> textIndex;
   private final IndexId textIndexId = IndexId.TEXT_INDEX;
 
+  @Override
+  public long addSynonym(Synonym synonym) {
+    return createSynonymNode(synonym).getId();
+  }
+
   @Transactional
   @Override
   public long addTaxon(final DetailedTaxon detailedTaxon) {
@@ -81,7 +91,7 @@ public class TaxonDaoImpl implements TaxonDao {
   public void assignParents() {
     Set<String> missing = new HashSet<String>();
     for (Node node : graphDbService.getAllNodes()) {
-      final String parentTaxId = (String) node.getProperty(TaxonField.PARENT_TAX_ID.name(), "");
+      final String parentTaxId = (String) node.getProperty(DetailedTaxonField.PARENT_TAX_ID.name(), "");
       Node parentNode = null;
       if (parentTaxId != null) {
         if (parentTaxId.equals("1")) {
@@ -134,7 +144,7 @@ public class TaxonDaoImpl implements TaxonDao {
         if (full) {
           lineage.add(buildTaxon(node));
         } else {
-          String hidden = (String) node.getProperty(TaxonField.HIDDEN.name(), "");
+          String hidden = (String) node.getProperty(DetailedTaxonField.HIDDEN.name(), "");
           if (!hidden.equals("true")) {
             lineage.add(buildTaxon(node));
           }
@@ -187,18 +197,22 @@ public class TaxonDaoImpl implements TaxonDao {
     }
     getTextIndex().add(node, textIndexId.name(), taxon.getScientificName().toLowerCase());
   }
+  
+  private void addTextToIndex(final Node node, final Synonym synonym) {
+    getTextIndex().add(node, textIndexId.name(), synonym.getName().toLowerCase());
+  }
 
   private DetailedTaxon buildDetailedTaxon(Node taxonNode) {
     final String taxId = (String) taxonNode.getProperty(TaxonField.TAX_ID.name(), "");
     final String scientificName = (String) taxonNode.getProperty(TaxonField.SCIENTIFIC_NAME.name(), "");
     final String commonName = (String) taxonNode.getProperty(TaxonField.COMMON_NAME.name(), "");
-    final String parentTaxId = (String) taxonNode.getProperty(TaxonField.PARENT_TAX_ID.name(), "");
-    final String geneticCode = (String) taxonNode.getProperty(TaxonField.GENETIC_CODE.name(), "");
+    final String parentTaxId = (String) taxonNode.getProperty(DetailedTaxonField.PARENT_TAX_ID.name(), "");
+    final String geneticCode = (String) taxonNode.getProperty(DetailedTaxonField.GENETIC_CODE.name(), "");
     final String mitochondrialGeneticCode =
-        (String) taxonNode.getProperty(TaxonField.MITOCHONDRIAL_GENETIC_CODE.name(), "");
-    final String hidden = (String) taxonNode.getProperty(TaxonField.HIDDEN.name(), "");
-    final String pln = (String) taxonNode.getProperty(TaxonField.PLN.name(), "");
-    final String rank = (String) taxonNode.getProperty(TaxonField.RANK.name(), "");
+        (String) taxonNode.getProperty(DetailedTaxonField.MITOCHONDRIAL_GENETIC_CODE.name(), "");
+    final String hidden = (String) taxonNode.getProperty(DetailedTaxonField.HIDDEN.name(), "");
+    final String pln = (String) taxonNode.getProperty(DetailedTaxonField.PLN.name(), "");
+    final String rank = (String) taxonNode.getProperty(DetailedTaxonField.RANK.name(), "");
     final DetailedTaxon detailedTaxon = new DetailedTaxon(taxId, scientificName, commonName);
     detailedTaxon.setParentTaxId(parentTaxId);
     detailedTaxon.setGeneticCode(geneticCode);
@@ -238,40 +252,53 @@ public class TaxonDaoImpl implements TaxonDao {
     return node;
   }
 
+  private Node createSynonymNode(final Synonym synonym) {
+    final Node node = createNode();
+    addTextToIndex(node, synonym);
+    try {
+      node.setProperty(GlobalField.NODE_TYPE.name(), NodeType.SYNONYM.name());
+      node.setProperty(SynonymField.TAX_ID.name(), synonym.getTaxId());
+      node.setProperty(SynonymField.TYPE.name(), synonym.getType());
+      node.setProperty(SynonymField.NAME.name(), synonym.getName());
+      } catch (final Exception e) {
+        log.error(ServerErrorMessages.SYNONYM_NODE_CREATION_FAILED, e);
+      }
+    return node;
+  }
+
   private Node createTaxonNode(final DetailedTaxon detailedTaxon) {
     final String externalKey = detailedTaxon.getTaxId();
     final Node node = createIndexedNode(externalKey);
     addTextToIndex(node, detailedTaxon);
     try {
+      node.setProperty(GlobalField.NODE_TYPE.name(), NodeType.TAXON.name());
       node.setProperty(TaxonField.TAX_ID.name(), detailedTaxon.getTaxId());
       node.setProperty(TaxonField.SCIENTIFIC_NAME.name(), detailedTaxon.getScientificName());
       if (detailedTaxon.getCommonName() != null) {
         node.setProperty(TaxonField.COMMON_NAME.name(), detailedTaxon.getCommonName());
       }
       if (detailedTaxon.getParentTaxId() != null) {
-        node.setProperty(TaxonField.PARENT_TAX_ID.name(), detailedTaxon.getParentTaxId());
+        node.setProperty(DetailedTaxonField.PARENT_TAX_ID.name(), detailedTaxon.getParentTaxId());
       }
       if (detailedTaxon.getHidden() != null) {
-        node.setProperty(TaxonField.HIDDEN.name(), detailedTaxon.getHidden());
+        node.setProperty(DetailedTaxonField.HIDDEN.name(), detailedTaxon.getHidden());
       }
       if (detailedTaxon.getGeneticCode() != null) {
-        node.setProperty(TaxonField.GENETIC_CODE.name(), detailedTaxon.getGeneticCode());
+        node.setProperty(DetailedTaxonField.GENETIC_CODE.name(), detailedTaxon.getGeneticCode());
       }
       if (detailedTaxon.getMitochondrialGeneticCode() != null) {
-        node.setProperty(TaxonField.MITOCHONDRIAL_GENETIC_CODE.name(), detailedTaxon.getMitochondrialGeneticCode());
+        node.setProperty(DetailedTaxonField.MITOCHONDRIAL_GENETIC_CODE.name(), detailedTaxon.getMitochondrialGeneticCode());
       }
       if (detailedTaxon.getPln() != null) {
-        node.setProperty(TaxonField.PLN.name(), detailedTaxon.getPln());
+        node.setProperty(DetailedTaxonField.PLN.name(), detailedTaxon.getPln());
       }
       if (detailedTaxon.getRank() != null) {
-        node.setProperty(TaxonField.RANK.name(), detailedTaxon.getRank());
+        node.setProperty(DetailedTaxonField.RANK.name(), detailedTaxon.getRank());
       }
-
-      return node;
     } catch (final Exception e) {
       log.error(ServerErrorMessages.TAXON_NODE_CREATION_FAILED, e);
-      return node;
     }
+    return node;
   }
 
   private Node getNodeByTaxId(final String taxId) {

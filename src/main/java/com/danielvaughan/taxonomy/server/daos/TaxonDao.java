@@ -1,6 +1,7 @@
 package com.danielvaughan.taxonomy.server.daos;
 
 import com.danielvaughan.taxonomy.shared.model.DetailedTaxon;
+import com.danielvaughan.taxonomy.shared.model.Synonym;
 import com.danielvaughan.taxonomy.shared.model.Taxon;
 
 import org.neo4j.graphdb.Node;
@@ -26,5 +27,7 @@ public interface TaxonDao {
   List<Taxon> searchTaxons(String searchString, int resultLimit);
 
   List<Taxon> getRelationshipByTaxIds(String taxIdA, String taxIdB);
+
+  long addSynonym(Synonym synonym);
 
 }
