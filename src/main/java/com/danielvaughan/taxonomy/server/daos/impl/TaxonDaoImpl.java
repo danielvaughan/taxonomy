@@ -148,7 +148,7 @@ public class TaxonDaoImpl implements TaxonDao {
       final IndexManager index = graphDbService.index();
       textIndex = index.forNodes(textIndexId.name());
     }
-    return taxIdIndex;
+    return textIndex;
   }
 
   @Override
@@ -171,7 +171,9 @@ public class TaxonDaoImpl implements TaxonDao {
       if (partialKey.trim().equals("")) {
         log.debug("Empty key sent");
       } else {
-        final IndexHits<Node> hits = getTextIndex().query(textIndexId.name(), partialKey.toLowerCase().concat("*"));
+        String query = partialKey.toLowerCase().concat("*");
+        Index<Node> textIndex = getTextIndex();
+        final IndexHits<Node> hits = textIndex.query(textIndexId.name(), query);
         for (final Node hit : hits) {
           nodes.add(hit);
         }
