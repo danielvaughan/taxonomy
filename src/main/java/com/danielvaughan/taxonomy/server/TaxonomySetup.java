@@ -2,7 +2,7 @@ package com.danielvaughan.taxonomy.server;
 
 import com.danielvaughan.taxonomy.server.daos.TaxonDao;
 import com.danielvaughan.taxonomy.server.util.ApplicationContextLoader;
-import com.danielvaughan.taxonomy.shared.model.Taxon;
+import com.danielvaughan.taxonomy.shared.model.DetailedTaxon;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,7 +19,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -30,26 +32,32 @@ public class TaxonomySetup {
 
   private static final int BATCH_SIZE = 10000;
 
-  public static void main(String[] args) {
-    TaxonomySetup taxonomySetup = new TaxonomySetup();
-    ApplicationContextLoader loader = new ApplicationContextLoader();
+  public static void main(final String[] args) {
+    final TaxonomySetup taxonomySetup = new TaxonomySetup();
+    final ApplicationContextLoader loader = new ApplicationContextLoader();
     loader.load(taxonomySetup, "META-INF/applicationContext.xml");
     taxonomySetup.run();
+    taxonomySetup.configureParents();
   }
 
   private final String filePath;
 
-  private Log log = LogFactory.getLog(TaxonomySetup.class);
+  private final Log log = LogFactory.getLog(TaxonomySetup.class);
 
   @Autowired
   private TaxonDao taxonDao;
 
   public TaxonomySetup() {
-    this.filePath = "/Users/dvaughan/Downloads/taxonomy.xml";
+    this.filePath = "/Users/dvaughan/Downloads/taxonomy.xml"; //"/Users/dvaughan/webin_dev/taxonomy/src/main/resources/data/mini.xml";
+    
   }
 
   public TaxonomySetup(final String filePath) {
     this.filePath = filePath;
+  }
+
+  public void configureParents() {
+    taxonDao.assignParents();
   }
 
   @Transactional
@@ -57,15 +65,15 @@ public class TaxonomySetup {
     staxParse();
   }
 
-  protected Taxon loadXmlTaxon(Element eleTaxon) {
+  protected DetailedTaxon loadXmlTaxon(final Element eleTaxon) {
     try {
-      String taxId = eleTaxon.getAttributeValue("taxId");
-      String scientificName = eleTaxon.getAttributeValue("scientificName");
-      String commonName = eleTaxon.getAttributeValue("commonName");
-      Taxon taxon = new Taxon(taxId, scientificName, commonName);
-      return taxon;
-    } catch (Exception e) {
-      log.error("Exception parseing taxon element", e);
+      final String taxId = eleTaxon.getAttributeValue("taxId");
+      final String scientificName = eleTaxon.getAttributeValue("scientificName");
+      final String commonName = eleTaxon.getAttributeValue("commonName");
+      final DetailedTaxon detailedTaxon = new DetailedTaxon(taxId, scientificName, commonName);
+      return detailedTaxon;
+    } catch (final Exception e) {
+      log.error("Exception parsing taxon element", e);
       return null;
     }
   }
@@ -74,20 +82,20 @@ public class TaxonomySetup {
   private void JDOMParse() {
     try {
       log.info("Loading xml data: " + filePath);
-      SAXBuilder parser = new SAXBuilder();
-      InputStream in = getClass().getClassLoader().getResourceAsStream(filePath);
-      org.jdom.Document jdomDocument = parser.build(in);
-      Element eleRoot = jdomDocument.getRootElement();
+      final SAXBuilder parser = new SAXBuilder();
+      final InputStream in = getClass().getClassLoader().getResourceAsStream(filePath);
+      final org.jdom.Document jdomDocument = parser.build(in);
+      final Element eleRoot = jdomDocument.getRootElement();
       @SuppressWarnings("unchecked")
-      List<Element> taxonElements = eleRoot.getChildren("taxon");
-      for (Element eleTaxon : taxonElements) {
-        Taxon taxon = loadXmlTaxon(eleTaxon);
-        taxonDao.addTaxon(taxon);
+      final List<Element> taxonElements = eleRoot.getChildren("taxon");
+      for (final Element eleTaxon : taxonElements) {
+        final DetailedTaxon detailedTaxon = loadXmlTaxon(eleTaxon);
+        taxonDao.addTaxon(detailedTaxon);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       log.error("File error", e);
 
-    } catch (JDOMException e) {
+    } catch (final JDOMException e) {
       log.error("JDOM error", e);
     }
   }
@@ -95,24 +103,25 @@ public class TaxonomySetup {
   private void staxParse() {
     XMLInputFactory2 xmlif = null;
     try {
-      xmlif = (XMLInputFactory2) XMLInputFactory2.newInstance();
+      xmlif = (XMLInputFactory2) XMLInputFactory.newInstance();
       xmlif.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, Boolean.FALSE);
       xmlif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
       xmlif.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
       xmlif.configureForSpeed();
-    } catch (Exception ex) {
+    } catch (final Exception ex) {
       ex.printStackTrace();
     }
     System.out.println("Starting to parse " + filePath);
     System.out.println("");
-    long starttime = System.currentTimeMillis();
+    final long starttime = System.currentTimeMillis();
     int elementCount = 0;
     int depth = -1;
     try {
-      XMLStreamReader2 xmlr = (XMLStreamReader2) xmlif.createXMLStreamReader(filePath, new FileInputStream(filePath));
+      final XMLStreamReader2 xmlr =
+          (XMLStreamReader2) xmlif.createXMLStreamReader(filePath, new FileInputStream(filePath));
       int eventType = xmlr.getEventType();
       String curElement = "";
-      List<Taxon> taxonBatch = new ArrayList<Taxon>();
+      final List<DetailedTaxon> taxonBatch = new ArrayList<DetailedTaxon>();
       while (xmlr.hasNext()) {
         eventType = xmlr.next();
         switch (eventType) {
@@ -120,18 +129,29 @@ public class TaxonomySetup {
             depth++;
             curElement = xmlr.getName().toString();
             if (curElement.equals("taxon") && depth == 1) {
-              String taxId = xmlr.getAttributeValue("", "taxId");
-              String scientificName = xmlr.getAttributeValue("", "scientificName");
-              String commonName = xmlr.getAttributeValue("", "commonName");
-              Taxon taxon = new Taxon(taxId, scientificName, commonName);
-              taxonBatch.add(taxon);
+              final String taxId = xmlr.getAttributeValue("", "taxId");
+              final String scientificName = xmlr.getAttributeValue("", "scientificName");
+              final String hidden = xmlr.getAttributeValue("", "hidden");
+              final String rank = xmlr.getAttributeValue("", "rank");
+              final String pln = xmlr.getAttributeValue("", "PLN");
+              final String geneticCode = xmlr.getAttributeValue("", "geneticCode");
+              final String mitochondrialGeneticCode = xmlr.getAttributeValue("", "mitochondrialGeneticCode");
+              final String parentTaxId = xmlr.getAttributeValue("", "parentTaxId");
+              final String commonName = xmlr.getAttributeValue("", "commonName");
+              final DetailedTaxon detailedTaxon = new DetailedTaxon(taxId, scientificName, commonName);
+              detailedTaxon.setParentTaxId(parentTaxId);
+              detailedTaxon.setHidden(hidden);
+              detailedTaxon.setRank(rank);
+              detailedTaxon.setPln(pln);
+              detailedTaxon.setGeneticCode(geneticCode);
+              detailedTaxon.setMitochondrialGeneticCode(mitochondrialGeneticCode);
+              taxonBatch.add(detailedTaxon);
               if (taxonBatch.size() == BATCH_SIZE) {
                 taxonDao.batchAddTaxons(taxonBatch);
                 taxonBatch.clear();
               }
             }
             break;
-          case XMLEvent.ATTRIBUTE:
           case XMLEvent.END_ELEMENT:
             depth--;
             if (curElement.equals("taxon")) {
@@ -141,19 +161,13 @@ public class TaxonomySetup {
           case XMLEvent.END_DOCUMENT:
             System.out.println("Total of " + elementCount + " occurrences");
         }
-        if (eventType == XMLEvent.START_ELEMENT) {
-          curElement = xmlr.getName().toString();
-        } else {
-          if (eventType == XMLEvent.CHARACTERS) {
-          }
-        }
       }
-    } catch (XMLStreamException ex) {
+    } catch (final XMLStreamException ex) {
       System.out.println(ex.getMessage());
       if (ex.getNestedException() != null) {
         ex.getNestedException().printStackTrace();
       }
-    } catch (Exception ex) {
+    } catch (final Exception ex) {
       ex.printStackTrace();
     }
     System.out.println(" completed in " + (System.currentTimeMillis() - starttime) + " ms");

@@ -5,7 +5,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 public class Taxon {
 
   public enum TaxonField {
-    TAX_ID, SCIENTIFIC_NAME, COMMON_NAME
+    TAX_ID, SCIENTIFIC_NAME, COMMON_NAME, PARENT_TAX_ID, HIDDEN, GENETIC_CODE, MITOCHONDRIAL_GENETIC_CODE, RANK, PLN
   }
 
   private String scientificName;
@@ -14,34 +14,38 @@ public class Taxon {
 
   private String commonName;
 
-  public Taxon(String taxId, String scientificName, String commonName) {
+  public Taxon(final String taxId, final String scientificName, final String commonName) {
     this.taxId = taxId;
     this.scientificName = scientificName;
     this.commonName = commonName;
   }
 
-  public String getScientificName() {
-    return scientificName;
-  }
-
-  public void setScientificName(String scientificName) {
-    this.scientificName = scientificName;
-  }
-
-  public String getTaxId() {
-    return taxId;
-  }
-
-  public void setTaxId(String taxId) {
-    this.taxId = taxId;
+  public Taxon() {
+    this("0","","");
   }
 
   public String getCommonName() {
     return commonName;
   }
 
-  public void setCommonName(String commonName) {
+  public String getScientificName() {
+    return scientificName;
+  }
+
+  public String getTaxId() {
+    return taxId;
+  }
+
+  public void setCommonName(final String commonName) {
     this.commonName = commonName;
+  }
+
+  public void setScientificName(final String scientificName) {
+    this.scientificName = scientificName;
+  }
+
+  public void setTaxId(final String taxId) {
+    this.taxId = taxId;
   }
 
   @Override

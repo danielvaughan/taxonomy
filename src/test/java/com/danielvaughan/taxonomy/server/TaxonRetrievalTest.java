@@ -21,10 +21,22 @@ public class TaxonRetrievalTest {
   
   @Test
   public void testRetrieveByTaxId() {
-    List<String> taxIds = Arrays.asList("9606", "7675", "9000");
+    List<String> taxIds = Arrays.asList("1205708","745062","9606", "7675", "9000",  "131567", "1");
     for (final String taxId : taxIds) {
       Taxon retrievedTaxon = taxonDao.getTaxonByTaxId(taxId);
       System.out.println(retrievedTaxon.toString());
+    }
+  }
+  
+  @Test
+  public void testLineage() {
+    List<String> taxIds = Arrays.asList("1205708","745062","9606", "7675", "9000",  "131567", "1");
+    for (final String taxId : taxIds) {
+      System.out.println("taxId:" + taxId);
+      List<Taxon> taxons = taxonDao.getLineageByTaxId(taxId, true);
+      for (final Taxon taxon : taxons) {
+        System.out.println(taxon.toString());
+      }
     }
   }
 

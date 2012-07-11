@@ -1,6 +1,7 @@
 package com.danielvaughan.taxonomy.server.web;
 
 import com.danielvaughan.taxonomy.server.daos.TaxonDao;
+import com.danielvaughan.taxonomy.shared.model.DetailedTaxon;
 import com.danielvaughan.taxonomy.shared.model.Taxon;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +28,39 @@ public class TaxonController
     modelMap.addAttribute("taxon", taxon);
   }
   
+  @RequestMapping(value = "/detail/{taxId}", method = RequestMethod.GET)
+  public void getDetailedTaxonByTaxId(@PathVariable String taxId, ModelMap modelMap)
+  {
+    DetailedTaxon detailedTaxon = taxonDao.getDetailedTaxonByTaxId(taxId);
+    modelMap.addAttribute("detailedTaxon", detailedTaxon);
+  }
+  
+  @RequestMapping(value = "/relationship/{taxIdA}/to/{taxIdB}", method = RequestMethod.GET)
+  public void getRelationshipByTaxIds(@PathVariable String taxIdA, @PathVariable String taxIdB, ModelMap modelMap)
+  {
+    List<Taxon> taxons = taxonDao.getRelationshipByTaxIds(taxIdA, taxIdB);
+    modelMap.addAttribute("relationship", taxons);
+  }
+  
+  @RequestMapping(value = "/lineage/{taxId}", method = RequestMethod.GET)
+  public void getLineageByTaxId(@PathVariable String taxId, ModelMap modelMap)
+  {
+    List<Taxon> taxons = taxonDao.getLineageByTaxId(taxId, false);
+    modelMap.addAttribute("lineage", taxons);
+  }
+  
+  @RequestMapping(value = "/fulllineage/{taxId}", method = RequestMethod.GET)
+  public void getFullLineageByTaxId(@PathVariable String taxId, ModelMap modelMap)
+  {
+    List<Taxon> taxons = taxonDao.getLineageByTaxId(taxId, true);
+    modelMap.addAttribute("lineage", taxons);
+  }
+  
   @RequestMapping(value ="/{query}", method = RequestMethod.GET)
   public void getTaxonSuggestions(@PathVariable String query, ModelMap modelMap)
   {
     List<Taxon> taxons = taxonDao.searchTaxons(query, 100);
-    modelMap.addAttribute("taxon", taxons);
+    modelMap.addAttribute("taxons", taxons);
   }
   
 }

@@ -1,6 +1,7 @@
 package com.danielvaughan.taxonomy.server;
 
 import com.danielvaughan.taxonomy.server.daos.TaxonDao;
+import com.danielvaughan.taxonomy.shared.model.DetailedTaxon;
 import com.danielvaughan.taxonomy.shared.model.Taxon;
 
 import static org.junit.Assert.*;
@@ -23,7 +24,7 @@ public class TaxonDaoTest {
     final String taxId = "9606";
     final String scientificName = "Homo Sapien";
     final String commonName = "Human";
-    final Taxon createdTaxon = new Taxon(taxId, scientificName, commonName);
+    final DetailedTaxon createdTaxon = new DetailedTaxon(taxId, scientificName, commonName);
     taxonDao.addTaxon(createdTaxon);
     Taxon retrievedTaxon = taxonDao.getTaxonByTaxId(taxId);
     assertEquals(createdTaxon.getTaxId(), retrievedTaxon.getTaxId());
