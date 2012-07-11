@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taxonSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <taxon scientificName="Melanoseris" taxId="1205708" parentTaxId="745062" rank="genus"
+        taxonomicDivision="PLN" geneticCode="1" mitochondrialGeneticCode="1">
+        <lineage>
+            <taxon scientificName="Lactucinae" taxId="745062" rank="subtribe"/>
+            <taxon scientificName="Cichorieae" taxId="219121" rank="tribe"/>
+            <taxon scientificName="Cichorioideae" taxId="219120" rank="subfamily"/>
+            <taxon scientificName="Asteraceae" taxId="4210" rank="family"/>
+            <taxon scientificName="Asterales" taxId="4209" rank="order"/>
+            <taxon scientificName="campanulids" taxId="91882"/>
+            <taxon scientificName="asterids" taxId="71274" rank="subclass"/>
+            <taxon scientificName="core eudicotyledons" taxId="91827"/>
+            <taxon scientificName="eudicotyledons" taxId="71240"/>
+            <taxon scientificName="Magnoliophyta" commonName="flowering plants" taxId="3398"/>
+            <taxon scientificName="Spermatophyta" taxId="58024"/>
+            <taxon scientificName="Euphyllophyta" taxId="78536" hidden="true"/>
+            <taxon scientificName="Tracheophyta" taxId="58023"/>
+            <taxon scientificName="Embryophyta" taxId="3193"/>
+            <taxon scientificName="Streptophytina" taxId="131221" hidden="true"/>
+            <taxon scientificName="Streptophyta" taxId="35493" rank="phylum"/>
+            <taxon scientificName="Viridiplantae" taxId="33090" rank="kingdom"/>
+            <taxon scientificName="Eukaryota" commonName="eucaryotes" taxId="2759"
+                rank="superkingdom"/>
+            <taxon scientificName="cellular organisms" taxId="131567" hidden="true"/>
+            <taxon scientificName="root" taxId="1" hidden="true"/>
+        </lineage>
+        <children>
+            <taxon scientificName="Melanoseris cyanea" taxId="687668" rank="species"/>
+        </children>
+    </taxon>
+    <taxon scientificName="Lateolabracidae" taxId="1204718" parentTaxId="8112" rank="family"
+        taxonomicDivision="VRT" geneticCode="1" mitochondrialGeneticCode="2">
+        <lineage>
+            <taxon scientificName="Percoidei" taxId="8112" rank="suborder"/>
+            <taxon scientificName="Perciformes" taxId="8111" rank="order"/>
+            <taxon scientificName="Percomorpha" taxId="32485"/>
+            <taxon scientificName="Euacanthopterygii" taxId="129947" hidden="true"/>
+            <taxon scientificName="Acanthopterygii" taxId="32455" rank="superorder"/>
+            <taxon scientificName="Holacanthopterygii" taxId="123370" hidden="true"/>
+            <taxon scientificName="Euacanthomorpha" taxId="123369" hidden="true"/>
+            <taxon scientificName="Acanthomorpha" taxId="123368"/>
+            <taxon scientificName="Ctenosquamata" taxId="123367" hidden="true"/>
+            <taxon scientificName="Eurypterygii" taxId="123366" hidden="true"/>
+            <taxon scientificName="Neoteleostei" taxId="123365"/>
+            <taxon scientificName="Neognathi" taxId="186839" hidden="true"/>
+            <taxon scientificName="Euteleostei" taxId="32447"/>
+            <taxon scientificName="Clupeocephala" taxId="186625" hidden="true"/>
+            <taxon scientificName="Elopocephala" taxId="186624" hidden="true"/>
+            <taxon scientificName="Teleostei" commonName="teleost fishes" taxId="32443"/>
+            <taxon scientificName="Neopterygii" taxId="41665"/>
+            <taxon scientificName="Actinopteri" taxId="186623" hidden="true"/>
+            <taxon scientificName="Actinopterygii" commonName="ray-finned fishes" taxId="7898"
+                rank="class"/>
+            <taxon scientificName="Euteleostomi" commonName="bony vertebrates" taxId="117571"/>
+            <taxon scientificName="Teleostomi" taxId="117570" hidden="true"/>
+            <taxon scientificName="Gnathostomata" commonName="jawed vertebrates" taxId="7776"
+                rank="superclass" hidden="true"/>
+            <taxon scientificName="Vertebrata" commonName="vertebrates" taxId="7742"/>
+            <taxon scientificName="Craniata" taxId="89593" rank="subphylum"/>
+            <taxon scientificName="Chordata" commonName="chordates" taxId="7711" rank="phylum"/>
+            <taxon scientificName="Deuterostomia" taxId="33511" hidden="true"/>
+            <taxon scientificName="Coelomata" taxId="33316" hidden="true"/>
+            <taxon scientificName="Bilateria" taxId="33213" hidden="true"/>
+            <taxon scientificName="Eumetazoa" taxId="6072" hidden="true"/>
+            <taxon scientificName="Metazoa" commonName="metazoans" taxId="33208" rank="kingdom"/>
+            <taxon scientificName="Opisthokonta" taxId="33154" hidden="true"/>
+            <taxon scientificName="Eukaryota" commonName="eucaryotes" taxId="2759"
+                rank="superkingdom"/>
+            <taxon scientificName="cellular organisms" taxId="131567" hidden="true"/>
+            <taxon scientificName="root" taxId="1" hidden="true"/>
+        </lineage>
+        <children>
+            <taxon scientificName="Lateolabrax" taxId="8163" rank="genus"> </taxon>
+        </children>
+    </taxon>
+</taxonSet>
