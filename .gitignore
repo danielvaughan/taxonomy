@@ -4,3 +4,18 @@ target/test-classes/com/danielvaughan/taxonomy/server/TaxonomySetupTest.class
 target/neo4j-db/neostore.propertystore.db.index.id
 
 target/neo4j-db/tm_tx_log.1
+
+.settings/org.eclipse.jdt.core.prefs
+
+.settings/org.eclipse.jdt.core.prefs
+
+.settings/org.eclipse.jdt.core.prefs
+
+.settings/org.eclipse.jdt.core.prefs
+
+.settings/org.eclipse.jdt.core.prefs
+
+neo-data/taxonomy-data/neostore.propertystore.db.strings.id
+/neo4j-db
+/target
+/.settings

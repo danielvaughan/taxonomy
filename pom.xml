@@ -2,11 +2,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.danielvaughan</groupId>
   <artifactId>taxonomy</artifactId>
+  <packaging>war</packaging>
   <version>0.0.1-SNAPSHOT</version>
   <description>		</description>
+  
   <properties>
     <neo4j.version>1.7.2</neo4j.version>
     <spring.version>3.1.1.RELEASE</spring.version>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
   </properties>
   <repositories>
     <repository>
@@ -25,19 +29,18 @@
     </repository>
   </repositories>
   <dependencies>
-    <!-- Neo4j
+    <!-- JDOM -->
     <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j</artifactId>
-      <version>${neo4j.version}</version>
-      <type>pom</type>
-      <exclusions>
-        <exclusion>
-          <artifactId>neo4j-ha</artifactId>
-          <groupId>org.neo4j</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>-->
+      <groupId>org.jdom</groupId>
+      <artifactId>com.springsource.org.jdom</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <!-- Woodstox -->
+    <dependency>
+      <groupId>org.codehaus.woodstox</groupId>
+      <artifactId>woodstox-core-asl</artifactId>
+      <version>4.1.0</version>
+    </dependency>
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework</groupId>
@@ -95,5 +98,35 @@
       <artifactId>junit</artifactId>
       <version>4.10</version>
     </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1.1</version>
+    </dependency>
   </dependencies>
+  <build>
+    <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.12</version>
+          <configuration>
+            <skipTests>true</skipTests>
+          </configuration>
+        </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.1.1</version>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>exploded</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -25,10 +25,14 @@
 		<property name="suffix" value=".jsp" />
 	</bean>
 	
+	<bean id="taxonomySetup" class="com.danielvaughan.taxonomy.server.TaxonomySetup">
+		<constructor-arg index="0" value="/Users/dvaughan/Downloads/taxonomy.xml"/>
+	</bean>
+	
 	<tx:annotation-driven />
 	
 	<beans profile="default">
-		<neo4j:config storeDirectory="target/neo4j-db"/>
+		<neo4j:config storeDirectory="/Users/dvaughan/webin_dev/taxonomy/neo4j-db"/>
 	</beans>
 	
 	<beans profile="prod">
