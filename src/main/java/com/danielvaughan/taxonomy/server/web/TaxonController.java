@@ -20,11 +20,25 @@ public class TaxonController
   
   @Autowired
   private TaxonDao taxonDao;
-  
+
   @RequestMapping(value = "/id/{taxId}", method = RequestMethod.GET)
   public void getTaxonByTaxId(@PathVariable String taxId, ModelMap modelMap)
   {
     Taxon taxon = taxonDao.getTaxonByTaxId(taxId);
+    modelMap.addAttribute("taxon", taxon);
+  }
+
+  @RequestMapping(value = "/comname/{commonName}", method = RequestMethod.GET)
+  public void getTaxonByCommonName(@PathVariable String commonName, ModelMap modelMap)
+  {
+    Taxon taxon = taxonDao.getTaxonByCommonName(commonName);
+    modelMap.addAttribute("taxon", taxon);
+  }
+  
+  @RequestMapping(value = "/sciname/{scientificName}", method = RequestMethod.GET)
+  public void getTaxonByScientificName(@PathVariable String scientificName, ModelMap modelMap)
+  {
+    Taxon taxon = taxonDao.getTaxonByScientificName(scientificName);
     modelMap.addAttribute("taxon", taxon);
   }
   

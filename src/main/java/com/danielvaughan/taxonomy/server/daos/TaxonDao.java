@@ -30,4 +30,8 @@ public interface TaxonDao {
 
   long addSynonym(Synonym synonym);
 
+  Taxon getTaxonByScientificName(String scientificName);
+
+  Taxon getTaxonByCommonName(String commonName);
+
 }

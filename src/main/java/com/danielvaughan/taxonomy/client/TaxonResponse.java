@@ -13,7 +13,7 @@ public class TaxonResponse {
     return taxon;
   }
 
-  public void setIssue(Taxon taxon) {
+  public void setTaxon(Taxon taxon) {
     this.taxon = taxon;
   }
 }

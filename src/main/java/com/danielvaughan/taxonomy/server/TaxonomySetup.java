@@ -3,7 +3,6 @@ package com.danielvaughan.taxonomy.server;
 import com.danielvaughan.taxonomy.server.daos.TaxonDao;
 import com.danielvaughan.taxonomy.server.util.ApplicationContextLoader;
 import com.danielvaughan.taxonomy.shared.model.DetailedTaxon;
-import com.danielvaughan.taxonomy.shared.model.Synonym;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,9 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -32,6 +29,7 @@ import javax.xml.stream.events.XMLEvent;
 public class TaxonomySetup {
 
   private static final int BATCH_SIZE = 10000;
+  private static final int PROGRESS_SIZE = 1000;
 
   public static void main(final String[] args) {
     final TaxonomySetup taxonomySetup = new TaxonomySetup();
@@ -49,8 +47,10 @@ public class TaxonomySetup {
   private TaxonDao taxonDao;
 
   public TaxonomySetup() {
-    this.filePath = "/Users/dvaughan/Downloads/taxonomy.xml"; //"/Users/dvaughan/webin_dev/taxonomy/src/main/resources/data/mini.xml";
-    
+    this.filePath = "/Users/dvaughan/Downloads/taxonomy.xml";
+
+    // "/Users/dvaughan/webin_dev/taxonomy/src/main/resources/data/mini.xml";
+    // "/Users/dvaughan/Downloads/taxonomy.xml";
   }
 
   public TaxonomySetup(final String filePath) {
@@ -150,17 +150,19 @@ public class TaxonomySetup {
               detailedTaxon.setMitochondrialGeneticCode(mitochondrialGeneticCode);
               taxonBatch.add(detailedTaxon);
               if (taxonBatch.size() == BATCH_SIZE) {
+                System.out.println("Adding batch");
                 taxonDao.batchAddTaxons(taxonBatch);
                 taxonBatch.clear();
               }
+              if (elementCount % PROGRESS_SIZE == 0) {
+                System.out.print(".");
+              }
             }
-            if (curElement.equals("synonym"))
-            {
-              final String type = xmlr.getAttributeValue("", "type");
-              final String name = xmlr.getAttributeValue("", "name");
-              final Synonym synonym = new Synonym(currentTaxId, type, name);
-              taxonDao.addSynonym(synonym);
-            }
+            /*
+             * if (curElement.equals("synonym")) { final String type = xmlr.getAttributeValue("", "type"); final String
+             * name = xmlr.getAttributeValue("", "name"); final Synonym synonym = new Synonym(currentTaxId, type, name);
+             * taxonDao.addSynonym(synonym); }
+             */
             break;
           case XMLEvent.END_ELEMENT:
             depth--;
@@ -172,6 +174,9 @@ public class TaxonomySetup {
             System.out.println("Total of " + elementCount + " occurrences");
         }
       }
+      // Add partial batch
+      taxonDao.batchAddTaxons(taxonBatch);
+      taxonBatch.clear();
     } catch (final XMLStreamException ex) {
       System.out.println(ex.getMessage());
       if (ex.getNestedException() != null) {

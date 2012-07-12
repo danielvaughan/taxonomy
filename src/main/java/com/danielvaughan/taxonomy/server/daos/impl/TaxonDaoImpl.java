@@ -45,6 +45,13 @@ public class TaxonDaoImpl implements TaxonDao {
   private GraphDatabaseService graphDbService;
 
   private final Log log = LogFactory.getLog(TaxonDaoImpl.class);
+
+  private Index<Node> commonNameIndex;
+  private final IndexId commonNameIndexId = IndexId.COMMON_NAME_INDEX;
+
+  private Index<Node> scientificNameIndex;
+  private final IndexId scientificNameIndexId = IndexId.SCIENTIFIC_NAME_INDEX;
+
   private Index<Node> taxIdIndex;
   private final IndexId taxIdIndexId = IndexId.TAXID_INDEX;
 
@@ -177,6 +184,20 @@ public class TaxonDaoImpl implements TaxonDao {
   }
 
   @Override
+  @Transactional
+  public Taxon getTaxonByScientificName(final String scientificName) {
+    final Node taxonNode = getNodeByScientificName(scientificName);
+    return buildTaxon(taxonNode);
+  }
+
+  @Override
+  @Transactional
+  public Taxon getTaxonByCommonName(final String commonName) {
+    final Node taxonNode = getNodeByCommonName(commonName);
+    return buildTaxon(taxonNode);
+  }
+
+  @Override
   public List<Taxon> searchTaxons(final String searchString, final int resultLimit) {
     final List<Taxon> taxons = new ArrayList<Taxon>();
     final Set<Node> taxonNodes = getNodesByPartialKey(searchString);
@@ -197,7 +218,7 @@ public class TaxonDaoImpl implements TaxonDao {
     }
     getTextIndex().add(node, textIndexId.name(), taxon.getScientificName().toLowerCase());
   }
-  
+
   private void addTextToIndex(final Node node, final Synonym synonym) {
     getTextIndex().add(node, textIndexId.name(), synonym.getName().toLowerCase());
   }
@@ -234,11 +255,16 @@ public class TaxonDaoImpl implements TaxonDao {
     return taxon;
   }
 
-  private Node createIndexedNode(String key) {
+  private Node createIndexedNode(String taxId, String scientificName, String commonName) {
     final Node node = createNode();
-    key = key.toLowerCase();
-    getTaxIdIndex().add(node, taxIdIndexId.name(), key);
-    log.debug("Indexed key: " + key + " in index " + taxIdIndexId.name());
+    getTaxIdIndex().add(node, taxIdIndexId.name(), taxId);
+    log.debug("Indexed key: " + taxId + " in index " + taxIdIndexId.name());
+    getScientificNameIndex().add(node, scientificNameIndexId.name(), scientificName.toLowerCase());
+    log.debug("Indexed key: " + scientificName + " in index " + scientificNameIndexId.name());
+    if (commonName != null) {
+      getCommonNameIndex().add(node, commonNameIndexId.name(), commonName.toLowerCase());
+      log.debug("Indexed key: " + commonName + " in index " + commonNameIndexId.name());
+    }
     return node;
   }
 
@@ -260,15 +286,17 @@ public class TaxonDaoImpl implements TaxonDao {
       node.setProperty(SynonymField.TAX_ID.name(), synonym.getTaxId());
       node.setProperty(SynonymField.TYPE.name(), synonym.getType());
       node.setProperty(SynonymField.NAME.name(), synonym.getName());
-      } catch (final Exception e) {
-        log.error(ServerErrorMessages.SYNONYM_NODE_CREATION_FAILED, e);
-      }
+    } catch (final Exception e) {
+      log.error(ServerErrorMessages.SYNONYM_NODE_CREATION_FAILED, e);
+    }
     return node;
   }
 
   private Node createTaxonNode(final DetailedTaxon detailedTaxon) {
-    final String externalKey = detailedTaxon.getTaxId();
-    final Node node = createIndexedNode(externalKey);
+    final String taxId = detailedTaxon.getTaxId();
+    final String scientificName = detailedTaxon.getScientificName();
+    final String commonName = detailedTaxon.getCommonName();
+    final Node node = createIndexedNode(taxId, scientificName, commonName);
     addTextToIndex(node, detailedTaxon);
     try {
       node.setProperty(GlobalField.NODE_TYPE.name(), NodeType.TAXON.name());
@@ -287,7 +315,8 @@ public class TaxonDaoImpl implements TaxonDao {
         node.setProperty(DetailedTaxonField.GENETIC_CODE.name(), detailedTaxon.getGeneticCode());
       }
       if (detailedTaxon.getMitochondrialGeneticCode() != null) {
-        node.setProperty(DetailedTaxonField.MITOCHONDRIAL_GENETIC_CODE.name(), detailedTaxon.getMitochondrialGeneticCode());
+        node.setProperty(DetailedTaxonField.MITOCHONDRIAL_GENETIC_CODE.name(), detailedTaxon
+            .getMitochondrialGeneticCode());
       }
       if (detailedTaxon.getPln() != null) {
         node.setProperty(DetailedTaxonField.PLN.name(), detailedTaxon.getPln());
@@ -297,6 +326,46 @@ public class TaxonDaoImpl implements TaxonDao {
       }
     } catch (final Exception e) {
       log.error(ServerErrorMessages.TAXON_NODE_CREATION_FAILED, e);
+    }
+    return node;
+  }
+
+  private Node getNodeByScientificName(final String scientificName) {
+    Node node = null;
+    try {
+      log.debug("Looking for " + scientificName + " in " + scientificNameIndexId.name());
+      final IndexHits<Node> nodes = getScientificNameIndex().get(scientificNameIndexId.name(), scientificName.toLowerCase());
+      if (nodes.size() > 1) {
+        log.error("More than one node found for " + scientificName);
+      }
+      node = nodes.getSingle();
+      if (node == null) {
+        log.debug("node not found");
+      } else {
+        log.debug("found node");
+      }
+    } catch (final NoSuchElementException e) {
+      log.error("Exception finding unique node", e);
+    }
+    return node;
+  }
+
+  private Node getNodeByCommonName(final String commonName) {
+    Node node = null;
+    try {
+      log.debug("Looking for " + commonName + " in " + commonNameIndexId.name());
+      final IndexHits<Node> nodes = getCommonNameIndex().get(commonNameIndexId.name(), commonName.toLowerCase());
+      if (nodes.size() > 1) {
+        log.error("More than one node found for " + commonName);
+      }
+      node = nodes.getSingle();
+      if (node == null) {
+        log.debug("node not found");
+      } else {
+        log.debug("found node");
+      }
+    } catch (final NoSuchElementException e) {
+      log.error("Exception finding unique node", e);
     }
     return node;
   }
@@ -339,6 +408,24 @@ public class TaxonDaoImpl implements TaxonDao {
       log.warn("Runtime exception when using key: " + partialKey, re);
       return null;
     }
+  }
+
+  private Index<Node> getCommonNameIndex() {
+    if (commonNameIndex == null) {
+      final IndexManager index = graphDbService.index();
+      commonNameIndex =
+          index.forNodes(commonNameIndexId.name(), MapUtil.stringMap("type", "exact", "to_lower_case", "true"));
+    }
+    return commonNameIndex;
+  }
+
+  private Index<Node> getScientificNameIndex() {
+    if (scientificNameIndex == null) {
+      final IndexManager index = graphDbService.index();
+      scientificNameIndex =
+          index.forNodes(scientificNameIndexId.name(), MapUtil.stringMap("type", "exact", "to_lower_case", "true"));
+    }
+    return scientificNameIndex;
   }
 
   private Index<Node> getTaxIdIndex() {
