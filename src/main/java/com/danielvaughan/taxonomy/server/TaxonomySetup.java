@@ -123,7 +123,6 @@ public class TaxonomySetup {
       int eventType = xmlr.getEventType();
       String curElement = "";
       final List<DetailedTaxon> taxonBatch = new ArrayList<DetailedTaxon>();
-      String currentTaxId = "";
       while (xmlr.hasNext()) {
         eventType = xmlr.next();
         switch (eventType) {
@@ -132,7 +131,6 @@ public class TaxonomySetup {
             curElement = xmlr.getName().toString();
             if (curElement.equals("taxon") && depth == 1) {
               final String taxId = xmlr.getAttributeValue("", "taxId");
-              currentTaxId = taxId;
               final String scientificName = xmlr.getAttributeValue("", "scientificName");
               final String hidden = xmlr.getAttributeValue("", "hidden");
               final String rank = xmlr.getAttributeValue("", "rank");
