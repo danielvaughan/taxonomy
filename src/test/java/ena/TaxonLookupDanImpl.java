@@ -30,14 +30,13 @@ public class TaxonLookupDanImpl implements TaxonLookup {
   
   @Override
   public TaxonInfo getTaxonInfoFromTaxId(String taxId) {
-    Taxon taxon = taxonomyClient.getTaxonById(taxId);
+    Taxon taxon = taxonomyClient.getTaxonByTaxId(taxId);
     return getTaxonInfoFromTaxon(taxon);
   }
 
   @Override
   public boolean isTaxIdValid(String taxId) {
-    
-    return false;
+    return taxonomyClient.isValidTaxId(taxId);
   }
 
   @Override
@@ -48,7 +47,7 @@ public class TaxonLookupDanImpl implements TaxonLookup {
 
   @Override
   public String suggestTaxId(String partialTaxId) {
-    // TODO Auto-generated method stub
+
     return null;
   }
 

@@ -15,7 +15,7 @@ public class TaxonomyClientImpl implements TaxonomyClient {
 
   public static void main(final String[] args) {
     final TaxonomyClient taxonomyClient = new TaxonomyClientImpl("http://127.0.0.1:8080/");
-    Taxon taxon = taxonomyClient.getTaxonById("9606");
+    Taxon taxon = taxonomyClient.getTaxonByTaxId("9606");
     System.out.println(taxon.getCommonName());
   }
   
@@ -34,21 +34,21 @@ public class TaxonomyClientImpl implements TaxonomyClient {
   }
   
   @Override
-  public Taxon getTaxonById(final String taxId) {
-    Map<String, String> vars = new HashMap<String, String>();
-    vars.put("taxId", taxId);
-    String url = baseUrl + "taxonomy/service/taxon/id/{taxId}";
-    TaxonResponse taxonResponse = restTemplate.getForObject(url, TaxonResponse.class, vars);
-    return taxonResponse.getTaxon();
-  }
-  
-  @Override
   public List<Taxon> getLineage(final String taxId) {
     Map<String, String> vars = new HashMap<String, String>();
     vars.put("taxId", taxId);
     String url = baseUrl + "taxonomy/service/taxon/lineage/{taxId}";
-    LineageResponse lineageResponse = restTemplate.getForObject(url, LineageResponse.class, vars);
-    return lineageResponse.getLineage();
+    TaxonListResponse taxonListResponse = restTemplate.getForObject(url, TaxonListResponse.class, vars);
+    return taxonListResponse.getTaxonList();
+  }
+  
+  @Override
+  public Taxon getTaxonByCommonName(String commonName) {
+    Map<String, String> vars = new HashMap<String, String>();
+    vars.put("commonName", commonName);
+    String url = baseUrl + "taxonomy/service/taxon/comname/{commonName}";
+    TaxonResponse taxonResponse = restTemplate.getForObject(url, TaxonResponse.class, vars);
+    return taxonResponse.getTaxon();
   }
 
   @Override
@@ -61,11 +61,37 @@ public class TaxonomyClientImpl implements TaxonomyClient {
   }
   
   @Override
-  public Taxon getTaxonByCommonName(String commonName) {
+  public Taxon getTaxonByTaxId(final String taxId) {
     Map<String, String> vars = new HashMap<String, String>();
-    vars.put("commonName", commonName);
-    String url = baseUrl + "taxonomy/service/taxon/comname/{commonName}";
+    vars.put("taxId", taxId);
+    String url = baseUrl + "taxonomy/service/taxon/taxid/{taxId}";
     TaxonResponse taxonResponse = restTemplate.getForObject(url, TaxonResponse.class, vars);
     return taxonResponse.getTaxon();
+  }
+
+  @Override
+  public boolean isValidTaxId(String taxId) {
+    Map<String, String> vars = new HashMap<String, String>();
+    vars.put("taxId", taxId);
+    String url = baseUrl + "taxonomy/service/taxon/isvalid/taxid/{taxId}";
+    ValidResponse validResponse = restTemplate.getForObject(url, ValidResponse.class, vars);
+    return validResponse.isValid();
+  }
+
+  @Override
+  public List<Taxon> suggestTaxId(String partialTaxId) {
+    Map<String, String> vars = new HashMap<String, String>();
+    vars.put("partialTaxId", partialTaxId);
+    
+    return null;
+  }
+
+  @Override
+  public List<Taxon> suggest(String query, int limit) {
+    Map<String, String> vars = new HashMap<String, String>();
+    vars.put("query", query);
+    String url = baseUrl + "taxonomy/service/taxon/search/{query}";
+    TaxonListResponse taxonListResponse = restTemplate.getForObject(url, TaxonListResponse.class, vars);
+    return taxonListResponse.getTaxonList();
   }
 }

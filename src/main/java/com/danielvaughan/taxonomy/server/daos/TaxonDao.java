@@ -10,28 +10,30 @@ import java.util.List;
 
 public interface TaxonDao {
 
+  long addSynonym(Synonym synonym);
+
   long addTaxon(DetailedTaxon detailedTaxon);
 
   void assignParent(Node childNode, Node parentNode);
 
   void assignParents();
-
-  void batchAddTaxons(List<DetailedTaxon> detailedTaxon);
   
+  void batchAddTaxons(List<DetailedTaxon> detailedTaxon);
+
   DetailedTaxon getDetailedTaxonByTaxId(String taxId);
 
   List<Taxon> getLineageByTaxId(String taxId, boolean full);
 
-  Taxon getTaxonByTaxId(String taxId);
-
-  List<Taxon> searchTaxons(String searchString, int resultLimit);
-
   List<Taxon> getRelationshipByTaxIds(String taxIdA, String taxIdB);
 
-  long addSynonym(Synonym synonym);
+  Taxon getTaxonByCommonName(String commonName);
 
   Taxon getTaxonByScientificName(String scientificName);
 
-  Taxon getTaxonByCommonName(String commonName);
+  Taxon getTaxonByTaxId(String taxId);
+
+  boolean isTaxIdValid(String taxId);
+
+  List<Taxon> searchTaxons(String searchString, int resultLimit);
 
 }

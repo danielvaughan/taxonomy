@@ -41,13 +41,13 @@ import java.util.Set;
 @Component
 public class TaxonDaoImpl implements TaxonDao {
 
+  private Index<Node> commonNameIndex;
+
+  private final IndexId commonNameIndexId = IndexId.COMMON_NAME_INDEX;
+
   @Autowired
   private GraphDatabaseService graphDbService;
-
   private final Log log = LogFactory.getLog(TaxonDaoImpl.class);
-
-  private Index<Node> commonNameIndex;
-  private final IndexId commonNameIndexId = IndexId.COMMON_NAME_INDEX;
 
   private Index<Node> scientificNameIndex;
   private final IndexId scientificNameIndexId = IndexId.SCIENTIFIC_NAME_INDEX;
@@ -178,8 +178,8 @@ public class TaxonDaoImpl implements TaxonDao {
 
   @Override
   @Transactional
-  public Taxon getTaxonByTaxId(final String taxId) {
-    final Node taxonNode = getNodeByTaxId(taxId);
+  public Taxon getTaxonByCommonName(final String commonName) {
+    final Node taxonNode = getNodeByCommonName(commonName);
     return buildTaxon(taxonNode);
   }
 
@@ -192,9 +192,14 @@ public class TaxonDaoImpl implements TaxonDao {
 
   @Override
   @Transactional
-  public Taxon getTaxonByCommonName(final String commonName) {
-    final Node taxonNode = getNodeByCommonName(commonName);
+  public Taxon getTaxonByTaxId(final String taxId) {
+    final Node taxonNode = getNodeByTaxId(taxId);
     return buildTaxon(taxonNode);
+  }
+
+  @Override
+  public boolean isTaxIdValid(String taxId) {
+    return (getNodeByTaxId(taxId)!=null);
   }
 
   @Override
@@ -211,16 +216,16 @@ public class TaxonDaoImpl implements TaxonDao {
     return taxons;
   }
 
+  private void addTextToIndex(final Node node, final Synonym synonym) {
+    getTextIndex().add(node, textIndexId.name(), synonym.getName().toLowerCase());
+  }
+
   private void addTextToIndex(final Node node, final Taxon taxon) {
     getTextIndex().add(node, textIndexId.name(), taxon.getTaxId());
     if (taxon.getCommonName() != null) {
       getTextIndex().add(node, textIndexId.name(), taxon.getCommonName().toLowerCase());
     }
     getTextIndex().add(node, textIndexId.name(), taxon.getScientificName().toLowerCase());
-  }
-
-  private void addTextToIndex(final Node node, final Synonym synonym) {
-    getTextIndex().add(node, textIndexId.name(), synonym.getName().toLowerCase());
   }
 
   private DetailedTaxon buildDetailedTaxon(Node taxonNode) {
@@ -330,13 +335,22 @@ public class TaxonDaoImpl implements TaxonDao {
     return node;
   }
 
-  private Node getNodeByScientificName(final String scientificName) {
+  private Index<Node> getCommonNameIndex() {
+    if (commonNameIndex == null) {
+      final IndexManager index = graphDbService.index();
+      commonNameIndex =
+          index.forNodes(commonNameIndexId.name(), MapUtil.stringMap("type", "exact", "to_lower_case", "true"));
+    }
+    return commonNameIndex;
+  }
+
+  private Node getNodeByCommonName(final String commonName) {
     Node node = null;
     try {
-      log.debug("Looking for " + scientificName + " in " + scientificNameIndexId.name());
-      final IndexHits<Node> nodes = getScientificNameIndex().get(scientificNameIndexId.name(), scientificName.toLowerCase());
+      log.debug("Looking for " + commonName + " in " + commonNameIndexId.name());
+      final IndexHits<Node> nodes = getCommonNameIndex().get(commonNameIndexId.name(), commonName.toLowerCase());
       if (nodes.size() > 1) {
-        log.error("More than one node found for " + scientificName);
+        log.error("More than one node found for " + commonName);
       }
       node = nodes.getSingle();
       if (node == null) {
@@ -350,13 +364,13 @@ public class TaxonDaoImpl implements TaxonDao {
     return node;
   }
 
-  private Node getNodeByCommonName(final String commonName) {
+  private Node getNodeByScientificName(final String scientificName) {
     Node node = null;
     try {
-      log.debug("Looking for " + commonName + " in " + commonNameIndexId.name());
-      final IndexHits<Node> nodes = getCommonNameIndex().get(commonNameIndexId.name(), commonName.toLowerCase());
+      log.debug("Looking for " + scientificName + " in " + scientificNameIndexId.name());
+      final IndexHits<Node> nodes = getScientificNameIndex().get(scientificNameIndexId.name(), scientificName.toLowerCase());
       if (nodes.size() > 1) {
-        log.error("More than one node found for " + commonName);
+        log.error("More than one node found for " + scientificName);
       }
       node = nodes.getSingle();
       if (node == null) {
@@ -408,15 +422,6 @@ public class TaxonDaoImpl implements TaxonDao {
       log.warn("Runtime exception when using key: " + partialKey, re);
       return null;
     }
-  }
-
-  private Index<Node> getCommonNameIndex() {
-    if (commonNameIndex == null) {
-      final IndexManager index = graphDbService.index();
-      commonNameIndex =
-          index.forNodes(commonNameIndexId.name(), MapUtil.stringMap("type", "exact", "to_lower_case", "true"));
-    }
-    return commonNameIndex;
   }
 
   private Index<Node> getScientificNameIndex() {

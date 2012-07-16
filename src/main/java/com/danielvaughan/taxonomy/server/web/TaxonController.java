@@ -21,7 +21,14 @@ public class TaxonController
   @Autowired
   private TaxonDao taxonDao;
 
-  @RequestMapping(value = "/id/{taxId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/isvalid/taxid/{taxId}")
+  public void getIsValidTaxId(@PathVariable String taxId, ModelMap modelMap)
+  {
+    Boolean valid = taxonDao.isTaxIdValid(taxId);
+    modelMap.addAttribute("valid", valid);
+  }
+  
+  @RequestMapping(value = "/taxid/{taxId}", method = RequestMethod.GET)
   public void getTaxonByTaxId(@PathVariable String taxId, ModelMap modelMap)
   {
     Taxon taxon = taxonDao.getTaxonByTaxId(taxId);
@@ -60,21 +67,21 @@ public class TaxonController
   public void getLineageByTaxId(@PathVariable String taxId, ModelMap modelMap)
   {
     List<Taxon> taxons = taxonDao.getLineageByTaxId(taxId, false);
-    modelMap.addAttribute("lineage", taxons);
+    modelMap.addAttribute("taxonList", taxons);
   }
   
   @RequestMapping(value = "/fulllineage/{taxId}", method = RequestMethod.GET)
   public void getFullLineageByTaxId(@PathVariable String taxId, ModelMap modelMap)
   {
     List<Taxon> taxons = taxonDao.getLineageByTaxId(taxId, true);
-    modelMap.addAttribute("lineage", taxons);
+    modelMap.addAttribute("taxonList", taxons);
   }
   
-  @RequestMapping(value ="/{query}", method = RequestMethod.GET)
+  @RequestMapping(value ="/search/{query}", method = RequestMethod.GET)
   public void getTaxonSuggestions(@PathVariable String query, ModelMap modelMap)
   {
     List<Taxon> taxons = taxonDao.searchTaxons(query, 100);
-    modelMap.addAttribute("taxons", taxons);
+    modelMap.addAttribute("taxonList", taxons);
   }
   
 }
