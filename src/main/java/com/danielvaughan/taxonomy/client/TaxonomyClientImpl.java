@@ -90,7 +90,8 @@ public class TaxonomyClientImpl implements TaxonomyClient {
   public List<Taxon> suggest(String query, int limit) {
     Map<String, String> vars = new HashMap<String, String>();
     vars.put("query", query);
-    String url = baseUrl + "taxonomy/service/taxon/search/{query}";
+    vars.put("limit", String.valueOf(limit));
+    String url = baseUrl + "taxonomy/service/taxon/search/{query}/limit/{limit}";
     TaxonListResponse taxonListResponse = restTemplate.getForObject(url, TaxonListResponse.class, vars);
     return taxonListResponse.getTaxonList();
   }

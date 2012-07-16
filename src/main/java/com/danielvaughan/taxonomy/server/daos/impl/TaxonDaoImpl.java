@@ -205,12 +205,25 @@ public class TaxonDaoImpl implements TaxonDao {
   @Override
   public List<Taxon> searchTaxons(final String searchString, final int resultLimit) {
     final List<Taxon> taxons = new ArrayList<Taxon>();
+    Node taxIdNode = getNodeByTaxId(searchString);
+    if (taxIdNode!=null)
+    {
+      taxons.add(buildTaxon(taxIdNode));
+    }
+    Node scientificNameNode = getNodeByScientificName(searchString);
+    if (scientificNameNode!=null)
+    {
+      taxons.add(buildTaxon(scientificNameNode));
+    }
+    Node commonNameNode = getNodeByCommonName(searchString);
+    if (commonNameNode!=null)
+    {
+      taxons.add(buildTaxon(commonNameNode));
+    }
     final Set<Node> taxonNodes = getNodesByPartialKey(searchString);
-    int count = 0;
     for (final Node taxonNode : taxonNodes) {
-      if (count <= resultLimit) {
+      if (taxons.size() < resultLimit) {
         taxons.add(buildTaxon(taxonNode));
-        count++;
       }
     }
     return taxons;
