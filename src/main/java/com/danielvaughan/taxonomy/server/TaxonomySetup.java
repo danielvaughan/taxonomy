@@ -2,6 +2,7 @@ package com.danielvaughan.taxonomy.server;
 
 import com.danielvaughan.taxonomy.server.daos.TaxonDao;
 import com.danielvaughan.taxonomy.server.util.ApplicationContextLoader;
+import com.danielvaughan.taxonomy.server.util.FTPDownloader;
 import com.danielvaughan.taxonomy.shared.model.DetailedTaxon;
 
 import org.apache.commons.logging.Log;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +41,7 @@ public class TaxonomySetup {
     taxonomySetup.configureParents();
   }
 
-  private final String filePath;
+  private String filePath;
 
   private final Log log = LogFactory.getLog(TaxonomySetup.class);
 
@@ -47,8 +49,13 @@ public class TaxonomySetup {
   private TaxonDao taxonDao;
 
   public TaxonomySetup() {
-    this.filePath = "/Users/dvaughan/Downloads/taxonomy.xml";
-
+    try {
+      FTPDownloader downloader = new FTPDownloader();
+      File taxonomyFile = downloader.download();
+      this.filePath = taxonomyFile.getCanonicalPath();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     // "/Users/dvaughan/webin_dev/taxonomy/src/main/resources/data/mini.xml";
     // "/Users/dvaughan/Downloads/taxonomy.xml";
   }
@@ -79,29 +86,8 @@ public class TaxonomySetup {
     }
   }
 
-  @SuppressWarnings("unused")
-  private void JDOMParse() {
-    try {
-      log.info("Loading xml data: " + filePath);
-      final SAXBuilder parser = new SAXBuilder();
-      final InputStream in = getClass().getClassLoader().getResourceAsStream(filePath);
-      final org.jdom.Document jdomDocument = parser.build(in);
-      final Element eleRoot = jdomDocument.getRootElement();
-      @SuppressWarnings("unchecked")
-      final List<Element> taxonElements = eleRoot.getChildren("taxon");
-      for (final Element eleTaxon : taxonElements) {
-        final DetailedTaxon detailedTaxon = loadXmlTaxon(eleTaxon);
-        taxonDao.addTaxon(detailedTaxon);
-      }
-    } catch (final IOException e) {
-      log.error("File error", e);
-
-    } catch (final JDOMException e) {
-      log.error("JDOM error", e);
-    }
-  }
-
   private void staxParse() {
+    taxonDao.clearAll();
     XMLInputFactory2 xmlif = null;
     try {
       xmlif = (XMLInputFactory2) XMLInputFactory.newInstance();

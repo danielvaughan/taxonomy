@@ -36,4 +36,6 @@ public interface TaxonDao {
 
   List<Taxon> searchTaxons(String searchString, int resultLimit);
 
+  void clearAll();
+
 }

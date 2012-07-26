@@ -462,4 +462,10 @@ public class TaxonDaoImpl implements TaxonDao {
     }
     return textIndex;
   }
+
+  @Override
+  public void clearAll() {
+    // TODO Auto-generated method stub
+    
+  }
 }
