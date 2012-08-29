@@ -10,8 +10,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
 import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,16 +43,14 @@ public class TaxonomySetup {
   private final Log log = LogFactory.getLog(TaxonomySetup.class);
 
   @Autowired
+  private FTPDownloader ftpDownloader;
+  
+  @Autowired
   private TaxonDao taxonDao;
+  
 
   public TaxonomySetup() {
-    try {
-      FTPDownloader downloader = new FTPDownloader();
-      File taxonomyFile = downloader.download();
-      this.filePath = taxonomyFile.getCanonicalPath();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    
     // "/Users/dvaughan/webin_dev/taxonomy/src/main/resources/data/mini.xml";
     // "/Users/dvaughan/Downloads/taxonomy.xml";
   }
@@ -70,6 +65,12 @@ public class TaxonomySetup {
 
   @Transactional
   public void run() {
+    try {
+      File taxonomyFile = ftpDownloader.download();
+      this.filePath = taxonomyFile.getCanonicalPath();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     staxParse();
   }
 
@@ -139,7 +140,7 @@ public class TaxonomySetup {
                 taxonBatch.clear();
               }
               if (elementCount % PROGRESS_SIZE == 0) {
-                System.out.print(".");
+                System.out.print('.');
               }
             }
             /*

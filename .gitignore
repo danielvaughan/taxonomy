@@ -19,3 +19,4 @@ neo-data/taxonomy-data/neostore.propertystore.db.strings.id
 /neo4j-db
 /target
 /.settings
+/neo4j-db-old
