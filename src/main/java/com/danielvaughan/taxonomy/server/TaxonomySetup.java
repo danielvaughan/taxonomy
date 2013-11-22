@@ -34,7 +34,7 @@ public class TaxonomySetup {
     final TaxonomySetup taxonomySetup = new TaxonomySetup();
     final ApplicationContextLoader loader = new ApplicationContextLoader();
     loader.load(taxonomySetup, "META-INF/applicationContext.xml");
-    taxonomySetup.run();
+    //taxonomySetup.run();
     taxonomySetup.configureParents();
   }
 
@@ -65,12 +65,12 @@ public class TaxonomySetup {
 
   @Transactional
   public void run() {
-    try {
-      File taxonomyFile = ftpDownloader.download();
-      this.filePath = taxonomyFile.getCanonicalPath();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    //try {
+     // File taxonomyFile = ftpDownloader.download();
+      this.filePath = "taxonomy.xml";//taxonomyFile.getCanonicalPath();
+   // } catch (IOException e) {
+    //  e.printStackTrace();
+    //}
     staxParse();
   }
 

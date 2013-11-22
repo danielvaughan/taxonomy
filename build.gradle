@@ -1,0 +1,45 @@
+apply plugin: 'eclipse'
+apply plugin: 'java'
+apply plugin: 'maven'
+
+version = '0.0.2'
+group = 'com.danielvaughan'
+archivesBaseName = 'taxonomy'
+
+repositories {
+  maven { url "http://repo.springsource.org/release" }
+  maven { url "http://repository.springsource.com/maven/bundles/external" }
+  maven { url "http://m2.neo4j.org/" }
+  mavenCentral()
+  mavenLocal()
+}
+
+def springVersion = '3.2.3.RELEASE'
+def springDataNeo4JVersion = '2.3.2.RELEASE'
+
+dependencies {
+  compile 'org.jdom:com.springsource.org.jdom:1.1.0'
+  compile 'org.codehaus.woodstox:woodstox-core-asl:4.2.0'
+  compile 'commons-lang:commons-lang:2.6'
+  compile 'commons-net:commons-net:3.1'
+  compile "org.springframework:spring-webmvc:${springVersion}"
+  compile("org.springframework.data:spring-data-neo4j:${springDataNeo4JVersion}") {
+    exclude module:'neo4j-cypher-dsl'
+  }
+  compile("org.springframework.data:spring-data-neo4j-aspects:${springDataNeo4JVersion}") {
+    exclude module:'neo4j-cypher-dsl'
+  }
+  
+  compile 'org.apache.commons:commons-compress:1.4.1'
+  compile 'org.hibernate:hibernate-validator:4.3.1.Final'
+  
+  testCompile 'junit:junit:4.11'
+  testCompile 'org.mockito:mockito-all:1.9.5'
+  testCompile "org.springframework:spring-test:${springVersion}"
+}
+
+eclipse {
+  project { natures 'org.springsource.ide.eclipse.gradle.core.nature' }
+  project { natures 'org.springframework.ide.eclipse.core.springnature' }
+  classpath { containers 'org.springsource.ide.eclipse.gradle.classpathcontainer' }
+}

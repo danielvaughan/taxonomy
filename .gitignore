@@ -20,3 +20,9 @@ neo-data/taxonomy-data/neostore.propertystore.db.strings.id
 /target
 /.settings
 /neo4j-db-old
+/bin
+/build
+/data
+/.gradle
+/taxonomy_test.log
+/taxonomy.xml.gz
